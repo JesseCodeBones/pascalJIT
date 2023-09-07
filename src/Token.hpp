@@ -24,6 +24,12 @@ enum Token : int {
   // control
   tok_begin = -7,
   tok_end = -8,
+  
+
+  //literal
+  tok_string_literal = -9,
+
+  tok_dot = -10,
 
 };
 
@@ -32,7 +38,22 @@ class Tokenizer {
 public:
   Tokenizer(std::string _source) : source(_source) {}
   int getToken() {
+
+    if (_lastChar == EOF || _pos >= source.size()) {
+      return Token::tok_eof;
+    }
     while (isspace(_lastChar)) {
+      _lastChar = source.at(_pos++);
+    }
+
+    // single line comments
+    if ('{' == _lastChar) {
+      do {
+        _lastChar = source.at(_pos++);
+        if (_lastChar == EOF || _lastChar == '\n' || _lastChar == '\r') {
+          throw std::runtime_error("illegal comments");
+        }
+      } while (_lastChar != '}');
       _lastChar = source.at(_pos++);
     }
 
@@ -42,9 +63,17 @@ public:
         identifier.push_back(_lastChar);
       }
 
-      //   if (identifier == "def") {
-      //     return Token::tok_def;
-      //   }
+      if (identifier == "program") {
+        return Token::tok_program;
+      }
+
+      if (identifier == "begin") {
+        return Token::tok_begin;
+      }
+
+      if (identifier == "end") {
+        return Token::tok_end;
+      }
       return Token::tok_identifier;
     }
 
@@ -58,21 +87,30 @@ public:
       return Token::tok_number;
     }
 
-    // single line comments
-    if ('{' == _lastChar) {
-      do {
+    if(_lastChar == '\'') {
+      _lastChar = source.at(_pos++);
+      stringLiteral = "";
+      while (_lastChar != '\'') {
+        stringLiteral.push_back(_lastChar);
         _lastChar = source.at(_pos++);
-        if(_lastChar == EOF || _lastChar == '\n' || _lastChar == '\r' ) {
-            throw std::runtime_error("illegal comments");
-        }
-      } while (_lastChar != '}');
+      }
+      _lastChar = source.at(_pos++);
+      return Token::tok_string_literal;
     }
 
-    return _lastChar;
+    if(_lastChar == '.') {
+      _lastChar = source.at(_pos++);
+      return Token::tok_dot;
+    }
+
+    int thisChar = _lastChar; ///< very important
+    _lastChar = source.at(_pos++);
+    return thisChar;
   }
 
   std::string identifier;
   uint32_t uSignNumber = 0U;
+  std::string stringLiteral;
 
 private:
   std::string source;
