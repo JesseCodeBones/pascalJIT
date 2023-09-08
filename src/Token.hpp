@@ -1,10 +1,13 @@
-#ifndef __pacal_jit_token__
-#define __pacal_jit_token__
+#ifndef __pascal_jit_token__
+#define __pascal_jit_token__
 
+#include <cassert>
 #include <cctype>
 #include <cstdint>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 enum Token : int {
 
@@ -55,13 +58,19 @@ public:
         }
       } while (_lastChar != '}');
       _lastChar = source.at(_pos++);
+      while (isspace(_lastChar)) {
+        _lastChar = source.at(_pos++);
+      }
     }
 
     if (isalpha(_lastChar)) {
-      identifier = _lastChar;
+      std::stringstream stream;
+      stream << _lastChar;
       while (isalpha(_lastChar = source.at(_pos++))) {
-        identifier.push_back(_lastChar);
+        stream << _lastChar;
       }
+
+      identifier = stream.str();
 
       if (identifier == "program") {
         return Token::tok_program;
@@ -90,10 +99,12 @@ public:
     if(_lastChar == '\'') {
       _lastChar = source.at(_pos++);
       stringLiteral = "";
+      std::stringstream stream;
       while (_lastChar != '\'') {
-        stringLiteral.push_back(_lastChar);
+        stream << _lastChar;
         _lastChar = source.at(_pos++);
       }
+      stringLiteral = stream.str();
       _lastChar = source.at(_pos++);
       return Token::tok_string_literal;
     }
