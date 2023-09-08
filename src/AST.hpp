@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-static Runtime runtime;
 
 class BaseAST {
-
+public:
   virtual std::vector<uint8_t> codegen() = 0;
+  std::shared_ptr<Runtime> runtimePtr;
 };
 
 class ExpressionAST : public BaseAST {
@@ -28,7 +28,7 @@ public:
   std::string literal;
   virtual std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> empty;
-    runtime.addStringLiteral(literal);
+    runtimePtr->addStringLiteral(literal);
     return empty;
   }
 };
@@ -47,7 +47,10 @@ public:
         // string literal argument
         std::unique_ptr<StringLiteralExpressionAST> stringPtr(
             static_cast<StringLiteralExpressionAST *>(arg.release()));
-        auto ptr = runtime.stringLiterals[stringPtr->literal];
+        stringPtr->runtimePtr = runtimePtr;
+        stringPtr->codegen();
+        auto ptr = runtimePtr->stringLiterals[stringPtr->literal];
+        std::cout << std::hex << ptr<< std::endl;
         addAssemblyToExecutable(result,
                                 insertPtrToRegister(regIndex, ptr.get()));
       }
@@ -55,7 +58,7 @@ public:
     }
 
     // call native
-    void *funPtr = runtime.nativeFunction[calleeName];
+    void *funPtr = runtimePtr->nativeFunction[calleeName];
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
     addAssemblyToExecutable(result, callRegister(9));
     return result;

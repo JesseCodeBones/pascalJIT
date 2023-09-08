@@ -2,6 +2,7 @@
 #define __pascal_jit_parser__
 #include "AST.hpp"
 #include "Token.hpp"
+#include "Runtime.hpp"
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -11,7 +12,7 @@
 class Parser {
 
 public:
-  Parser(Tokenizer &tokenizer) : tokenizer(tokenizer) {}
+  Parser(Tokenizer &tokenizer, std::shared_ptr<Runtime> runtime) : tokenizer(tokenizer), runtime(runtime)  {}
 
   std::unique_ptr<ExpressionAST> parseIdentifierExpression() {
     std::string identifier = tokenizer.identifier;
@@ -19,6 +20,7 @@ public:
     if (currentToken == '(') {
       std::unique_ptr<CallExpressionAST> callAST =
           std::make_unique<CallExpressionAST>(identifier);
+      callAST->runtimePtr = runtime;
       getNextToken(); // eat (
       while (currentToken != ')') {
         switch (currentToken) {
@@ -116,6 +118,7 @@ private:
     currentToken = tokenizer.getToken();
     return currentToken;
   }
+  std::shared_ptr<Runtime> runtime;
 };
 
 #endif
