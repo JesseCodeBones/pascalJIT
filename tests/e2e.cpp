@@ -7,6 +7,7 @@
 #include <fstream>
 #include "../src/Token.hpp"
 #include "../src/Parser.hpp"
+#include "../src/JIT.hpp"
 
 const std::filesystem::path workspace = std::filesystem::current_path().parent_path().parent_path();
 
@@ -19,8 +20,10 @@ TEST(compiler_e2e, base) {
 
     Tokenizer tokenizer(buffer.str());
     Parser parser(tokenizer);
-    parser.parse();
-    
+    auto program = parser.parse();
+
+    auto fun = createJit(program->codegen());
+    fun();
 
 
     // auto nextTok = tokenizer.getToken();

@@ -24,9 +24,8 @@ public:
         switch (currentToken) {
         case Token::tok_string_literal: {
           std::string strValue = tokenizer.stringLiteral;
-          std::unique_ptr<StringLiteralExpressionAST> stringLiteral =
-              std::make_unique<StringLiteralExpressionAST>(strValue);
-          callAST->args.push_back(std::move(stringLiteral));
+          callAST->args.push_back(
+              std::make_unique<StringLiteralExpressionAST>(strValue));
           getNextToken();
           break;
         }
@@ -92,18 +91,20 @@ public:
     return std::move(program);
   }
 
-  void parse() {
+  std::unique_ptr<ProgramAST> parse() {
     getNextToken();
+    std::unique_ptr<ProgramAST> program;
     while (true) {
       switch (currentToken) {
       case Token::tok_eof:
-        return;
+        return std::move(program);
       case ';':
         getNextToken();
         break;
-      case Token::tok_program:
-        parseProgram();
+      case Token::tok_program: {
+       program = std::move(parseProgram());
         break;
+      }
       }
     }
   }
