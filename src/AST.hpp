@@ -63,7 +63,7 @@ public:
 
     // call native
     void *funPtr = runtimePtr->nativeFunction[calleeName];
-    void(*fun)(char*) = (void(*fun)(char*)) (funPtr);
+    void(*fun)(char*) = (void(*)(char*)) funPtr;
     fun("hello jesse\n");
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
     addAssemblyToExecutable(result, callRegister(9));

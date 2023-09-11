@@ -14,29 +14,20 @@ const std::filesystem::path workspace = std::filesystem::current_path().parent_p
 
 TEST(compiler_e2e, base) { 
 
-    std::ifstream t(workspace / "tests" / "cases" / "helloworld.pas");
-    std::stringstream buffer;
-    buffer << t.rdbuf();
-    buffer << EOF;
+    // std::ifstream t(workspace / "tests" / "cases" / "helloworld.pas");
+    // std::stringstream buffer;
+    // buffer << t.rdbuf();
+    // buffer << EOF;
 
-    Tokenizer tokenizer(buffer.str());
-    Parser parser(tokenizer, std::make_shared<Runtime>());
-    auto program = parser.parse();
+    // Tokenizer tokenizer(buffer.str());
+    // Parser parser(tokenizer, std::make_shared<Runtime>());
+    // auto program = parser.parse();
 
-    auto fun = createJit(program->codegen());
-    fun();
+    // auto fun = createJit(program->codegen());
+    // fun();
 
-
-    // auto nextTok = tokenizer.getToken();
-
-    // while ( nextTok != Token::tok_eof) {
-    //     if(nextTok<0) {
-    //         std::cout << nextTok << std::endl;
-    //     } else {
-    //         std::cout << static_cast<char>(nextTok) << std::endl;
-    //     }
-        
-    //     nextTok = tokenizer.getToken();
-    // }
-    
+    Runtime runtime;
+    void *funPtr = runtime.nativeFunction["write"];
+    void(*fun)(char*) = (void(*)(char*)) funPtr;
+    fun("hello jesse\n");
  }
