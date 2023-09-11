@@ -101,6 +101,14 @@ public:
       stringLiteral = "";
       std::stringstream stream;
       while (_lastChar != '\'') {
+         if (_lastChar == '\\') {
+          _lastChar = source.at(_pos++);
+          if (_lastChar == 'n') {
+            stream << '\n';
+            _lastChar = source.at(_pos++);
+          }
+          continue; // escape '\'
+        }
         stream << _lastChar;
         _lastChar = source.at(_pos++);
       }
