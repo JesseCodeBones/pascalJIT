@@ -71,6 +71,17 @@ public:
   }
 };
 
+
+class VariableAST: public BaseAST {
+public:
+  std::string variableName;
+  std::unique_ptr<ExpressionAST> assignment;
+  std::vector<uint8_t> codegen() override {
+    std::vector<uint8_t> executable;
+    return executable;
+    }
+};
+
 class ProgramAST : public BaseAST {
 public:
   ProgramAST(std::string name) : programName(name) {}

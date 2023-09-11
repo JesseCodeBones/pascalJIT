@@ -10,7 +10,7 @@
 extern "C" {
 
   void runtime_write(char* str) {
-    printf(str);
+    printf("%s", str);
   }
 }
 

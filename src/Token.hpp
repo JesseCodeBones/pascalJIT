@@ -42,7 +42,7 @@ public:
   Tokenizer(std::string _source) : source(_source) {}
   int getToken() {
 
-    if (_lastChar == EOF || _pos >= source.size()) {
+    if ( _pos >= source.size()) {
       return Token::tok_eof;
     }
     while (isspace(_lastChar)) {
@@ -53,7 +53,7 @@ public:
     if ('{' == _lastChar) {
       do {
         _lastChar = source.at(_pos++);
-        if (_lastChar == EOF || _lastChar == '\n' || _lastChar == '\r') {
+        if ( _pos >= source.size() || _lastChar == '\n' || _lastChar == '\r') {
           throw std::runtime_error("illegal comments");
         }
       } while (_lastChar != '}');
