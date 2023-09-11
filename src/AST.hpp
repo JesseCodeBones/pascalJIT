@@ -41,7 +41,8 @@ public:
   std::vector<std::unique_ptr<ExpressionAST>> args;
   std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> result;
-    uint32_t regIndex = 1;
+    addAssemblyToExecutable(result, storeX29X30());
+    uint32_t regIndex = 0;
     for (auto &arg : args) {
       if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
         // string literal argument
@@ -61,12 +62,11 @@ public:
       regIndex++;
     }
 
-    // call native
     void *funPtr = runtimePtr->nativeFunction[calleeName];
-    void(*fun)(char*) = (void(*)(char*)) funPtr;
-    fun("hello jesse\n");
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
     addAssemblyToExecutable(result, callRegister(9));
+    addAssemblyToExecutable(result, loadX29X30());
+    addAssemblyToExecutable(result, ret());
     return result;
   }
 };

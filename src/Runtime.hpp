@@ -6,11 +6,19 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+extern "C" {
+
+  void runtime_write(char* str) {
+    printf(str);
+  }
+}
+
 class Runtime{
 public:
 
   Runtime(){
-    nativeFunction["write"] = (void*)printf;
+    nativeFunction["write"] = (void*)runtime_write;
   }
   
   void addStringLiteral(std::string str) {

@@ -53,7 +53,38 @@ static void addAssemblyToExecutable(std::vector<uint8_t> & executable, std::vect
   }
 }
 
+static std::vector<uint8_t> ret(){
+  std::vector<uint8_t> assemblies;
+  uint32_t r = 0xD65F0000 | (30 << 5);
+  addUint32_t(assemblies, r);
+  return assemblies;
+}
 
+
+static std::vector<uint8_t> storeX29X30(){
+
+  std::vector<uint8_t> assemblies;
+  uint32_t stp_x29_x30 = 0b101010011 << 23;
+  stp_x29_x30 |= (0x2211 << 5);
+  stp_x29_x30 |= (((-16 / 8) & 0b1111111) << 15); // IMM7
+  stp_x29_x30 |= (30 << 10); // RT2
+  stp_x29_x30 |= (31 << 5); // RN sp = X31
+  stp_x29_x30 |= (29); // RT
+  addUint32_t(assemblies, stp_x29_x30);
+  return assemblies;
+}
+
+static std::vector<uint8_t> loadX29X30(){
+
+  std::vector<uint8_t> assemblies;
+  uint32_t LDP_X29_X30 = 0b1010100011 << 22;
+  LDP_X29_X30 |= (((16 / 8) & 0b1111111) << 15); // IMM7
+  LDP_X29_X30 |= (30 << 10); // RT2
+  LDP_X29_X30 |= (31 << 5); // RN sp = X31
+  LDP_X29_X30 |= (29); // RT
+  addUint32_t(assemblies, LDP_X29_X30);
+  return assemblies;
+}
 
 
 #endif
