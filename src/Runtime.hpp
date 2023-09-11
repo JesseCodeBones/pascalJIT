@@ -13,11 +13,11 @@ public:
     nativeFunction["write"] = (void*)printf;
   }
   
-  void addStringLiteral(std::string& str) {
-    stringLiterals.emplace(str, std::make_shared<std::string>(str));
+  void addStringLiteral(std::string str) {
+    stringLiterals.push_back(str);
   }
 
-  std::unordered_map<std::string, std::shared_ptr<std::string>> stringLiterals;
+  std::vector<std::string> stringLiterals;
   std::unordered_map<std::string, void*> nativeFunction;
 };
 

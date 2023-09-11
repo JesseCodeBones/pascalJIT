@@ -49,16 +49,22 @@ public:
             static_cast<StringLiteralExpressionAST *>(arg.release()));
         stringPtr->runtimePtr = runtimePtr;
         stringPtr->codegen();
-        auto ptr = runtimePtr->stringLiterals[stringPtr->literal];
-        std::cout << std::hex << ptr<< std::endl;
-        addAssemblyToExecutable(result,
-                                insertPtrToRegister(regIndex, ptr.get()));
+        auto it = std::find_if(
+          stringPtr->runtimePtr->stringLiterals.begin(), 
+          stringPtr->runtimePtr->stringLiterals.end(), 
+          [&stringPtr](const std::string& str){return str == stringPtr->literal;});
+        if (it != stringPtr->runtimePtr->stringLiterals.end()) {
+          addAssemblyToExecutable(result,
+                                insertPtrToRegister(regIndex, (void*)(*it).c_str()));
+        }
       }
       regIndex++;
     }
 
     // call native
     void *funPtr = runtimePtr->nativeFunction[calleeName];
+    void(*fun)(char*) = (void(*fun)(char*)) (funPtr);
+    fun("hello jesse\n");
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
     addAssemblyToExecutable(result, callRegister(9));
     return result;
