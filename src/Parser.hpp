@@ -19,6 +19,10 @@
     }                                                                          \
   }
 
+
+static uint32_t currentLocals = 0U;
+
+
 class Parser {
 
 public:
@@ -34,20 +38,15 @@ public:
       callAST->runtimePtr = runtime;
       getNextToken(); // eat (
       while (currentToken != ')') {
-        switch (currentToken) {
-        case Token::tok_string_literal: {
-          std::string strValue = tokenizer.stringLiteral;
-          callAST->args.push_back(
-              std::make_unique<StringLiteralExpressionAST>(strValue));
-          getNextToken();
-          break;
-        }
-        default:
-          getNextToken();
-          break;
-        }
+        auto expression = parseExpression();
+        callAST->args.push_back(std::move(expression));
       }
       return std::move(callAST);
+    } else {
+      // normal identifier expression
+      std::unique_ptr<IdentifierExpressionAST> identifierPtr = std::make_unique<IdentifierExpressionAST>();
+      identifierPtr->identifier = identifier;
+      return std::move(identifierPtr);
     }
 
     return nullptr;
@@ -58,10 +57,46 @@ public:
     switch (currentToken) {
     case tok_identifier:
       return parseIdentifierExpression();
+    case tok_string_literal: {
+      std::string strValue = tokenizer.stringLiteral;
+      getNextToken();
+      return std::make_unique<StringLiteralExpressionAST>(strValue);
+    }
     default:
       getNextToken(); // eat undefined token
       return nullptr;
     }
+  }
+
+  std::unique_ptr<ExpressionAST> parseVariableExpression() {
+    getNextToken(); // eat var
+    if (currentToken != Token::tok_identifier) {
+      throw std::runtime_error("var without identifier");
+    }
+    std::unique_ptr<VariableAST> variable = std::make_unique<VariableAST>();
+    variable->variableName = tokenizer.identifier;
+    currentLocals++;
+    variable->scopeIndex = currentLocals;
+    getNextToken(); // eat identifier
+    if (currentToken != ':') {
+      throw std::runtime_error("var without type");
+    }
+    getNextToken();                          // eat :
+    if (currentToken != Token::tok_string) { // if not type token
+      throw std::runtime_error("var without type");
+    } else {
+      // handle type
+      variable->type = (Token)currentToken;
+    }
+    getNextToken(); // eat type
+    if (currentToken == '=') {
+      getNextToken();
+      // handle literal
+      if (currentToken == Token::tok_string_literal) {
+        variable->assignment = parseExpression();
+      }
+    }
+    return std::move(variable);
   }
 
   std::vector<std::unique_ptr<ExpressionAST>> parseTopLevelExpression() {
@@ -72,9 +107,16 @@ public:
       case Token::tok_eof: {
         return result;
       }
-      case ';':
+      case ';': {
         getNextToken();
         break;
+      }
+      case Token::tok_var: {
+        auto varExpression = parseVariableExpression();
+        if (varExpression) {
+          result.push_back(std::move(varExpression));
+        }
+      }
       default: {
         auto expression = parseExpression();
         if (expression) {

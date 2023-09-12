@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 
+
 enum Token : int {
 
   tok_eof = -1,
@@ -20,19 +21,23 @@ enum Token : int {
   // command
   tok_program = -4,
   tok_function = -5,
+  tok_var = -6,
 
   // type
-  tok_integer = -6,
+  tok_integer = -7,
 
   // control
-  tok_begin = -7,
-  tok_end = -8,
+  tok_begin = -8,
+  tok_end = -9,
   
 
   //literal
-  tok_string_literal = -9,
+  tok_string_literal = -10,
 
-  tok_dot = -10,
+  tok_dot = -11,
+
+  //type
+  tok_string = -12,
 
 };
 
@@ -78,6 +83,12 @@ public:
 
       if (identifier == "end") {
         return Token::tok_end;
+      }
+      if (identifier == "string") {
+        return Token::tok_string;
+      }
+      if (identifier == "var") {
+        return Token::tok_var;
       }
       return Token::tok_identifier;
     }

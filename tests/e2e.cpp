@@ -30,7 +30,7 @@ const std::filesystem::path workspace =
 //  }
 
 TEST(compiler_e2e, parser) {
-  std::ifstream t(workspace / "tests" / "cases" / "helloworld.pas");
+  std::ifstream t(workspace / "tests" / "cases" / "printVariable.pas");
   std::stringstream buffer;
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());

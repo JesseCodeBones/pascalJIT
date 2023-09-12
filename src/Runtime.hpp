@@ -1,6 +1,7 @@
 #ifndef __pascal_jit_runtime__
 #define __pascal_jit_runtime__
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -21,8 +22,15 @@ public:
     nativeFunction["write"] = (void*)runtime_write;
   }
   
-  void addStringLiteral(std::string str) {
-    stringLiterals.push_back(str);
+  const char* addStringLiteral(std::string str) {
+    auto iterator = std::find(stringLiterals.cbegin(), stringLiterals.cend(), str);
+    if(iterator == stringLiterals.cend()) {
+      stringLiterals.push_back(str);
+      return stringLiterals.back().c_str();
+    } else {
+      return (*iterator).c_str();
+    }
+    
   }
 
   std::vector<std::string> stringLiterals;
