@@ -1,18 +1,29 @@
 #ifndef __pascal_jit_parser__
 #define __pascal_jit_parser__
 #include "AST.hpp"
-#include "Token.hpp"
 #include "Runtime.hpp"
+#include "Token.hpp"
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
+
+#define DEBUG_TOKEN(STR)                                                       \
+  if (debug) {                                                                 \
+    if (STR > 0) {                                                             \
+      std::cout << (char)STR << std::endl;                                     \
+    } else {                                                                   \
+      std::cout << STR << std::endl;                                           \
+    }                                                                          \
+  }
 
 class Parser {
 
 public:
-  Parser(Tokenizer &tokenizer, std::shared_ptr<Runtime> runtime) : tokenizer(tokenizer), runtime(runtime)  {}
+  Parser(Tokenizer &tokenizer, std::shared_ptr<Runtime> runtime)
+      : tokenizer(tokenizer), runtime(runtime) {}
 
   std::unique_ptr<ExpressionAST> parseIdentifierExpression() {
     std::string identifier = tokenizer.identifier;
@@ -104,18 +115,21 @@ public:
         getNextToken();
         break;
       case Token::tok_program: {
-       program = std::move(parseProgram());
+        program = std::move(parseProgram());
         break;
       }
       }
     }
   }
 
+  bool debug = false;
+
 private:
   int currentToken;
   Tokenizer &tokenizer;
   int getNextToken() {
     currentToken = tokenizer.getToken();
+    DEBUG_TOKEN(currentToken);
     return currentToken;
   }
   std::shared_ptr<Runtime> runtime;

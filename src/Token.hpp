@@ -41,26 +41,22 @@ class Tokenizer {
 public:
   Tokenizer(std::string _source) : source(_source) {}
   int getToken() {
-
     if ( _pos >= source.size()) {
       return Token::tok_eof;
     }
     while (isspace(_lastChar)) {
-      _lastChar = source.at(_pos++);
+      nextChar();
     }
-
     // single line comments
     if ('{' == _lastChar) {
       do {
-        _lastChar = source.at(_pos++);
+        nextChar();
         if ( _pos >= source.size() || _lastChar == '\n' || _lastChar == '\r') {
           throw std::runtime_error("illegal comments");
         }
       } while (_lastChar != '}');
-      _lastChar = source.at(_pos++);
-      while (isspace(_lastChar)) {
-        _lastChar = source.at(_pos++);
-      }
+      nextChar();
+      return getToken();
     }
 
     if (isalpha(_lastChar)) {
@@ -97,33 +93,33 @@ public:
     }
 
     if(_lastChar == '\'') {
-      _lastChar = source.at(_pos++);
+      nextChar();
       stringLiteral = "";
       std::stringstream stream;
       while (_lastChar != '\'') {
          if (_lastChar == '\\') {
-          _lastChar = source.at(_pos++);
+          nextChar();
           if (_lastChar == 'n') {
             stream << '\n';
-            _lastChar = source.at(_pos++);
+            nextChar();
           }
           continue; // escape '\'
         }
         stream << _lastChar;
-        _lastChar = source.at(_pos++);
+        nextChar();
       }
       stringLiteral = stream.str();
-      _lastChar = source.at(_pos++);
+      nextChar();
       return Token::tok_string_literal;
     }
 
     if(_lastChar == '.') {
-      _lastChar = source.at(_pos++);
+      nextChar();
       return Token::tok_dot;
     }
 
     int thisChar = _lastChar; ///< very important
-    _lastChar = source.at(_pos++);
+    nextChar();
     return thisChar;
   }
 
@@ -135,6 +131,13 @@ private:
   std::string source;
   char _lastChar = ' ';
   uint32_t _pos = 0U;
+  void nextChar(){
+    if ( _pos >= source.size()) {
+      _lastChar = Token::tok_eof;
+    } else {
+      _lastChar = source.at(_pos++);
+    }
+  }
 };
 
 #endif
