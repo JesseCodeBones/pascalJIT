@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 
 #define DEBUG_TOKEN(STR)                                                       \
   if (debug) {                                                                 \
@@ -20,14 +21,15 @@
   }
 
 
-static uint32_t currentLocals = 0U;
-
+static uint32_t currentScope = 0U;
+static std::unordered_map<uint32_t, std::unordered_map<std::string, uint32_t>> scopeLocals;
+static std::unordered_map<uint32_t, std::unordered_map<std::string, Token>> scopeIdentifierTypes;
 
 class Parser {
 
 public:
   Parser(Tokenizer &tokenizer, std::shared_ptr<Runtime> runtime)
-      : tokenizer(tokenizer), runtime(runtime) {}
+      : tokenizer(tokenizer) {}
 
   std::unique_ptr<ExpressionAST> parseIdentifierExpression() {
     std::string identifier = tokenizer.identifier;
@@ -35,7 +37,6 @@ public:
     if (currentToken == '(') {
       std::unique_ptr<CallExpressionAST> callAST =
           std::make_unique<CallExpressionAST>(identifier);
-      callAST->runtimePtr = runtime;
       getNextToken(); // eat (
       while (currentToken != ')') {
         auto expression = parseExpression();
@@ -46,6 +47,8 @@ public:
       // normal identifier expression
       std::unique_ptr<IdentifierExpressionAST> identifierPtr = std::make_unique<IdentifierExpressionAST>();
       identifierPtr->identifier = identifier;
+      identifierPtr->type = scopeIdentifierTypes[currentScope][identifier];
+      identifierPtr->index = scopeLocals[currentScope][identifier];
       return std::move(identifierPtr);
     }
 
@@ -75,8 +78,15 @@ public:
     }
     std::unique_ptr<VariableAST> variable = std::make_unique<VariableAST>();
     variable->variableName = tokenizer.identifier;
-    currentLocals++;
-    variable->scopeIndex = currentLocals;
+    // currentLocals++;
+    auto locals = scopeLocals[currentScope];
+    if(locals.find(variable->variableName) != locals.cend()) {
+      throw std::runtime_error("duplicate variable");
+    }
+    auto index = locals.size() + 1U;
+    locals.emplace(variable->variableName, index);
+    variable->scopeIndex = index;
+    
     getNextToken(); // eat identifier
     if (currentToken != ':') {
       throw std::runtime_error("var without type");
@@ -88,6 +98,9 @@ public:
       // handle type
       variable->type = (Token)currentToken;
     }
+    auto& identifierTypes = scopeIdentifierTypes[currentScope];
+    identifierTypes.emplace(variable->variableName, variable->type);
+
     getNextToken(); // eat type
     if (currentToken == '=') {
       getNextToken();
@@ -102,6 +115,7 @@ public:
   std::vector<std::unique_ptr<ExpressionAST>> parseTopLevelExpression() {
     // parse call expression
     std::vector<std::unique_ptr<ExpressionAST>> result;
+    
     while (true) {
       switch (currentToken) {
       case Token::tok_eof: {
@@ -137,9 +151,11 @@ public:
     getNextToken(); // eat programName
     getNextToken(); // escape ;
     getNextToken(); // eat begin
+    currentScope = currentScope + 1;
     std::vector<std::unique_ptr<ExpressionAST>> topLevelExpressions =
         parseTopLevelExpression();
     auto program = std::make_unique<ProgramAST>(programName);
+    program->scopeIndex = currentScope;
     for (auto &expressionPtr : topLevelExpressions) {
       program->topLevelExpressions.push_back(std::move(expressionPtr));
     }
@@ -174,7 +190,6 @@ private:
     DEBUG_TOKEN(currentToken);
     return currentToken;
   }
-  std::shared_ptr<Runtime> runtime;
 };
 
 #endif

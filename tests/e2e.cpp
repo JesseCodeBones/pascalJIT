@@ -37,6 +37,8 @@ TEST(compiler_e2e, parser) {
   Parser parser(tokenizer, std::make_shared<Runtime>());
   parser.debug = true;
   auto program = parser.parse();
+  auto fun = createJit(program->codegen());
+  fun();
 }
 
 //  TEST(compiler_e2e, variable) {

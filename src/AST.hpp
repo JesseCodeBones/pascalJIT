@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
+static uint32_t codeGenScopeIndex = 0U;
+
 class BaseAST {
 public:
   virtual std::vector<uint8_t> codegen() = 0;
-  std::shared_ptr<Runtime> runtimePtr;
 };
-
+static std::unique_ptr<Runtime> runtimePtr = std::make_unique<Runtime>();
 class ExpressionAST : public BaseAST {
 public:
   virtual std::vector<uint8_t> codegen() = 0;
@@ -27,17 +28,23 @@ public:
   ~StringLiteralExpressionAST() override = default;
   std::string literal;
   virtual std::vector<uint8_t> codegen() override {
-    std::vector<uint8_t> empty;
-    return empty;
+    /// move ptr to R9
+    std::vector<uint8_t> result;
+    const char *strPtr = runtimePtr->addStringLiteral(literal);
+    addAssemblyToExecutable(result, insertPtrToRegister(9, strPtr));
+    return result;
   }
 };
 
 class IdentifierExpressionAST : public ExpressionAST {
 public:
   std::string identifier;
+  Token type;
+  uint32_t index;
   virtual std::vector<uint8_t> codegen() override {
-    std::vector<uint8_t> empty;
-    return empty;
+    std::vector<uint8_t> result;
+    addAssemblyToExecutable(result, ldr_register_register_offset(9, 29, (-8)*index));
+    return result;
   }
 };
 
@@ -52,14 +59,16 @@ public:
 
     uint32_t regIndex = 0;
     for (auto &arg : args) {
-      if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
-        // string literal argument
-        std::unique_ptr<StringLiteralExpressionAST> stringPtr(
-            static_cast<StringLiteralExpressionAST *>(arg.release()));
-        const char *strPtr = runtimePtr->addStringLiteral(stringPtr->literal);
-        addAssemblyToExecutable(result, insertPtrToRegister(regIndex, strPtr));
-      }
-
+      // if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
+      //   // string literal argument
+      //   std::unique_ptr<StringLiteralExpressionAST> stringPtr(
+      //       static_cast<StringLiteralExpressionAST *>(arg.release()));
+      //   const char *strPtr = runtimePtr->addStringLiteral(stringPtr->literal);
+      //   addAssemblyToExecutable(result, insertPtrToRegister(regIndex, strPtr));
+      // }
+      auto argToR9 = arg->codegen();
+      addAssemblyToExecutable(result, argToR9);
+      addAssemblyToExecutable(result, mov_register_register(regIndex, 9));
       regIndex++;
     }
 
@@ -102,9 +111,11 @@ public:
   ProgramAST(std::string name) : programName(name) {}
   std::string programName;
   std::vector<std::unique_ptr<ExpressionAST>> topLevelExpressions;
+  uint32_t scopeIndex;
 
   std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> executable;
+    codeGenScopeIndex = scopeIndex;
     addAssemblyToExecutable(executable, storeX29X30());
     addAssemblyToExecutable(executable, mov_register_register(29, 31));
     for (auto &toplevelExpression : topLevelExpressions) {
