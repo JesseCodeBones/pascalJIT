@@ -3,6 +3,7 @@
 #include "../src/Parser.hpp"
 #include "../src/Runtime.hpp"
 #include "../src/Token.hpp"
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -28,7 +29,19 @@ const std::filesystem::path workspace =
 //     auto fun = createJit(program->codegen());
 //     fun();
 //  }
-
+template< typename T>
+void printAssemblyMachineCode(T&& runtime) {
+  int index = 0;
+  for(uint8_t code : runtime) {
+    std::cout << std::hex << static_cast<uint32_t>(code);
+    index++;
+    if (index >= 4) {
+      index = 0;
+      std::cout << std::endl;
+    }
+  }
+}
+#define asm_debug
 TEST(compiler_e2e, parser) {
   std::ifstream t(workspace / "tests" / "cases" / "printVariable.pas");
   std::stringstream buffer;
@@ -37,8 +50,9 @@ TEST(compiler_e2e, parser) {
   Parser parser(tokenizer, std::make_shared<Runtime>());
   parser.debug = true;
   auto program = parser.parse();
-  auto fun = createJit(program->codegen());
-  fun();
+  // auto fun = createJit(program->codegen());
+  // fun();
+  printAssemblyMachineCode(program->codegen());
 }
 
 //  TEST(compiler_e2e, variable) {

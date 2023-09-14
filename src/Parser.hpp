@@ -79,7 +79,7 @@ public:
     std::unique_ptr<VariableAST> variable = std::make_unique<VariableAST>();
     variable->variableName = tokenizer.identifier;
     // currentLocals++;
-    auto locals = scopeLocals[currentScope];
+    auto& locals = scopeLocals[currentScope];
     if(locals.find(variable->variableName) != locals.cend()) {
       throw std::runtime_error("duplicate variable");
     }
