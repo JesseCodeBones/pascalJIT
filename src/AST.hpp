@@ -144,12 +144,8 @@ public:
       std::copy(expressionExecutable.begin(), expressionExecutable.end(),
                 std::back_inserter(executable));
     }
-    addAssemblyToExecutable(executable, mov_register_register(9, 31));
-    DEBUG("mov_register_register, 9, 31");
-    addAssemblyToExecutable(executable, sub_register_register(9, 29, 9));
-    DEBUG("sub_register_register, 9, 29, 9");
-    addAssemblyToExecutable(executable, add_register_register(31, 31, 9));
-    DEBUG("add_register_register, 31, 31, 9");
+    addAssemblyToExecutable(executable, mov_register_register(31, 29));
+    DEBUG("mov_register_register, 31, 29");
     addAssemblyToExecutable(executable, loadX29X30());
     DEBUG("loadX29X30");
     addAssemblyToExecutable(executable, ret());

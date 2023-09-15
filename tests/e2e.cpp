@@ -38,6 +38,8 @@ void printAssemblyMachineCode(T&& runtime) {
     if (index >= 4) {
       index = 0;
       std::cout << std::endl;
+    } else {
+      std::cout<< "_";
     }
   }
 }
@@ -50,9 +52,16 @@ TEST(compiler_e2e, parser) {
   Parser parser(tokenizer, std::make_shared<Runtime>());
   parser.debug = true;
   auto program = parser.parse();
-  // auto fun = createJit(program->codegen());
-  // fun();
-  printAssemblyMachineCode(program->codegen());
+  auto fun = createJit(program->codegen());
+  std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
+  //fun();
+  // printAssemblyMachineCode(program->codegen());
+}
+
+TEST(compiler_e2e, local_variable) {
+  std::vector<uint8_t> result;
+  addAssemblyToExecutable(result, storeX29X30());
+  addAssemblyToExecutable(result, storeX29X30());
 }
 
 //  TEST(compiler_e2e, variable) {
