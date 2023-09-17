@@ -30,6 +30,15 @@ static std::vector<uint8_t> mov_register_register(uint32_t register1, uint32_t r
   return assemblies;
 }
 
+static std::vector<uint8_t> mov_register_register_from_to_sp(uint32_t register1, uint32_t register2){
+  std::vector<uint8_t> assemblies;
+  uint32_t assembly = 0b1001000100000000000000 << 10;
+  assembly |= register1;
+  assembly |= (register2 << 5);
+  addUint32_t(assemblies, assembly);
+  return assemblies;
+}
+
 /// < register 3 cannot be sp
 static std::vector<uint8_t> sub_register_register(uint32_t register1, uint32_t register2, uint32_t register3){
   std::vector<uint8_t> assemblies;

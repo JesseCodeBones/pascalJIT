@@ -20,6 +20,7 @@ public:
 
   Runtime(){
     nativeFunction["write"] = (void*)runtime_write;
+    stringLiterals.reserve(1024*1024*8);
   }
   
   const char* addStringLiteral(std::string str) {

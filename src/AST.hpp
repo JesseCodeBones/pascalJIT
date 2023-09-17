@@ -10,7 +10,6 @@
 #include <vector>
 
 static uint32_t codeGenScopeIndex = 0U;
-#define asm_debug
 #ifdef asm_debug
 #define DEBUG(STR)                                                       \
     std::cout << STR << std::endl;                                            
@@ -51,9 +50,10 @@ public:
   uint32_t index;
   virtual std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> result;
+    addAssemblyToExecutable(result, sub_register_imm(10, 29, 0x8*index));
     addAssemblyToExecutable(result,
-                            ldr_register_register_offset(9, 29, (-8) * index));
-    DEBUG("ldr_register_register_offset, 9, 29, " << std::dec << static_cast<int>((-8) * index) );
+                            ldr_register_register_offset(9, 10, 0));
+    DEBUG("ldr_register_register_offset, 9, 10, ");
     return result;
   }
 };
@@ -115,9 +115,10 @@ public:
         const char *strPtr = runtimePtr->addStringLiteral(stringVal->literal);
         addAssemblyToExecutable(executable, insertPtrToRegister(9, strPtr));
         DEBUG("insertPtrToRegister, 9, " << std::hex << static_cast<const void* const>(strPtr));
+        addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
         addAssemblyToExecutable(executable, str_register_register_offset(
-                                                9, 31, (scopeIndex % 2) * 0x8));
-        DEBUG("str_register_register_offset, 9, 31, #0x"<<std::hex<<(scopeIndex % 2) * 0x8 );
+                                                9, 10, 0));
+        DEBUG("str_register_register_offset, 9, 10");
       }
     }
     return executable;
@@ -136,16 +137,16 @@ public:
     codeGenScopeIndex = scopeIndex;
     addAssemblyToExecutable(executable, storeX29X30());
     DEBUG("storeX29X30");
-    addAssemblyToExecutable(executable, mov_register_register(29, 31));
-    DEBUG("mov_register_register, 29, 31");
+    addAssemblyToExecutable(executable, mov_register_register_from_to_sp(29, 31));
+    DEBUG("mov_register_register_from_to_sp, 29, 31");
     for (auto &toplevelExpression : topLevelExpressions) {
       const std::vector<uint8_t> &expressionExecutable =
           toplevelExpression->codegen();
       std::copy(expressionExecutable.begin(), expressionExecutable.end(),
                 std::back_inserter(executable));
     }
-    addAssemblyToExecutable(executable, mov_register_register(31, 29));
-    DEBUG("mov_register_register, 31, 29");
+    addAssemblyToExecutable(executable, mov_register_register_from_to_sp(31, 29));
+    DEBUG("mov_register_register_from_to_sp, 31, 29");
     addAssemblyToExecutable(executable, loadX29X30());
     DEBUG("loadX29X30");
     addAssemblyToExecutable(executable, ret());

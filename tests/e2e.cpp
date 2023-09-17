@@ -50,18 +50,38 @@ TEST(compiler_e2e, parser) {
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());
   Parser parser(tokenizer, std::make_shared<Runtime>());
-  parser.debug = true;
   auto program = parser.parse();
   auto fun = createJit(program->codegen());
   std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
-  //fun();
+  fun();
   // printAssemblyMachineCode(program->codegen());
+}
+
+void mylog(char* c){
+  printf("%s\n", c);
 }
 
 TEST(compiler_e2e, local_variable) {
   std::vector<uint8_t> result;
+  const char* test = "you are a good boy";
   addAssemblyToExecutable(result, storeX29X30());
-  addAssemblyToExecutable(result, storeX29X30());
+  addAssemblyToExecutable(result, mov_register_register_from_to_sp(29, 31));
+  addAssemblyToExecutable(result, sub_register_imm(31, 31, 0x10));
+  addAssemblyToExecutable(result, sub_register_imm(10, 29, 0x8));
+  addAssemblyToExecutable(result, insertPtrToRegister(9, (void*)test));
+  addAssemblyToExecutable(result, str_register_register_offset(9, 10, 0)); //*
+  addAssemblyToExecutable(result,
+                            ldr_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(result, mov_register_register(0, 9));
+  addAssemblyToExecutable(result, insertPtrToRegister(9, (void*)mylog));
+  addAssemblyToExecutable(result, callRegister(9));
+  // addAssemblyToExecutable(result, add_register_imm(31, 31, 0x10)); //*
+  addAssemblyToExecutable(result, mov_register_register_from_to_sp(31, 29));
+  addAssemblyToExecutable(result, loadX29X30());
+  addAssemblyToExecutable(result, ret());
+  // auto fun = createJit(result);
+  // std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
+  // fun();
 }
 
 //  TEST(compiler_e2e, variable) {
