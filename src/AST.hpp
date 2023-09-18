@@ -72,8 +72,10 @@ public:
     uint32_t regIndex = 0;
     std::stringstream runtimeFunSigName;
     for (auto &arg : args) {
-      if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
-        runtimeFunSigName << "_string";
+      if (const auto p = dynamic_cast<IdentifierExpressionAST *>(arg.get())) {
+        if(p->type == Token::tok_string) {
+          runtimeFunSigName << "_string";
+        }
       }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
