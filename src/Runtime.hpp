@@ -9,10 +9,10 @@
 #include <vector>
 
 
-void runtime_write(char* str) {
+void runtime_write_string(char* str) {
   printf("%s", str);
 }
-void runtime_writeln(char* str) {
+void runtime_writeln_string(char* str) {
   printf("%s\n", str);
 }
 
@@ -20,8 +20,8 @@ class Runtime{
 public:
 
   Runtime(){
-    nativeFunction["write"] = (void*)runtime_write;
-    nativeFunction["writeln"] = (void*) runtime_writeln;
+    nativeFunction["write_string"] = (void*)runtime_write_string;
+    nativeFunction["writeln_string"] = (void*) runtime_writeln_string;
     stringLiterals.reserve(1024*1024*8);
   }
   

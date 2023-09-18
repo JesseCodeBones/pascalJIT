@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -68,24 +70,24 @@ public:
     std::vector<uint8_t> result;
 
     uint32_t regIndex = 0;
+    std::stringstream runtimeFunSigName;
     for (auto &arg : args) {
-      // if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
-      //   // string literal argument
-      //   std::unique_ptr<StringLiteralExpressionAST> stringPtr(
-      //       static_cast<StringLiteralExpressionAST *>(arg.release()));
-      //   const char *strPtr =
-      //   runtimePtr->addStringLiteral(stringPtr->literal);
-      //   addAssemblyToExecutable(result, insertPtrToRegister(regIndex,
-      //   strPtr));
-      // }
+      if (dynamic_cast<StringLiteralExpressionAST *>(arg.get())) {
+        runtimeFunSigName << "_string";
+      }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
       addAssemblyToExecutable(result, mov_register_register(regIndex, 9));
       DEBUG("mov_register_register," << std::dec << regIndex << ", " << 9 );
       regIndex++;
     }
-
-    void *funPtr = runtimePtr->nativeFunction[calleeName];
+    std::stringstream runtimeFunc;
+    runtimeFunc << calleeName;
+    runtimeFunc << runtimeFunSigName.str();
+    void *funPtr = runtimePtr->nativeFunction[runtimeFunc.str()];
+    if(!funPtr) {
+      throw new std::runtime_error("cannot find runtime function:"+runtimeFunc.str());
+    }
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
     DEBUG("insertPtrToRegister, 9, " << std::hex << static_cast<const void* const>(funPtr) );
     addAssemblyToExecutable(result, callRegister(9));
