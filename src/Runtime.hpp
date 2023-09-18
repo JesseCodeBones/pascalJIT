@@ -8,11 +8,12 @@
 #include <unordered_map>
 #include <vector>
 
-extern "C" {
 
-  void runtime_write(char* str) {
-    printf("%s", str);
-  }
+void runtime_write(char* str) {
+  printf("%s", str);
+}
+void runtime_writeln(char* str) {
+  printf("%s\n", str);
 }
 
 class Runtime{
@@ -20,6 +21,7 @@ public:
 
   Runtime(){
     nativeFunction["write"] = (void*)runtime_write;
+    nativeFunction["writeln"] = (void*) runtime_writeln;
     stringLiterals.reserve(1024*1024*8);
   }
   
