@@ -76,6 +76,8 @@ public:
         if(p->type == Token::tok_string) {
           runtimeFunSigName << "_string";
         }
+      } else if(const auto p = dynamic_cast<StringLiteralExpressionAST *>(arg.get())){
+        runtimeFunSigName << "_string";
       }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
