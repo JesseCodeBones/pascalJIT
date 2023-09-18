@@ -65,6 +65,13 @@ public:
       getNextToken();
       return std::make_unique<StringLiteralExpressionAST>(strValue);
     }
+    case Token::tok_var: {
+        auto varExpression = parseVariableExpression();
+        if (varExpression) {
+          return std::move(varExpression);
+        }
+        return nullptr;
+      }
     default:
       getNextToken(); // eat undefined token
       return nullptr;
@@ -125,12 +132,7 @@ public:
         getNextToken();
         break;
       }
-      case Token::tok_var: {
-        auto varExpression = parseVariableExpression();
-        if (varExpression) {
-          result.push_back(std::move(varExpression));
-        }
-      }
+      
       default: {
         auto expression = parseExpression();
         if (expression) {
@@ -148,14 +150,21 @@ public:
       throw std::runtime_error("program does not have a name");
     }
     const std::string programName = tokenizer.identifier;
-    getNextToken(); // eat programName
-    getNextToken(); // escape ;
-    getNextToken(); // eat begin
     currentScope = currentScope + 1;
-    std::vector<std::unique_ptr<ExpressionAST>> topLevelExpressions =
-        parseTopLevelExpression();
     auto program = std::make_unique<ProgramAST>(programName);
     program->scopeIndex = currentScope;
+    getNextToken(); // eat programName
+    getNextToken(); // escape ;
+    while (currentToken != Token::tok_begin) {
+      std::unique_ptr<ExpressionAST> topLevelIdentification =
+        parseExpression();
+      if(topLevelIdentification) {
+        program->topLevelExpressions.push_back(std::move(topLevelIdentification));
+      }
+    }
+    getNextToken(); // eat begin
+    std::vector<std::unique_ptr<ExpressionAST>> topLevelExpressions =
+        parseTopLevelExpression();
     for (auto &expressionPtr : topLevelExpressions) {
       program->topLevelExpressions.push_back(std::move(expressionPtr));
     }
