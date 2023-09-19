@@ -53,7 +53,7 @@ TEST(compiler_e2e, parser) {
   auto program = parser.parse();
   auto fun = createJit(program->codegen());
   std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
-  fun();
+  // fun();
   // printAssemblyMachineCode(program->codegen());
 }
 

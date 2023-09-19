@@ -40,7 +40,7 @@ public:
     std::vector<uint8_t> result;
     const char *strPtr = runtimePtr->addStringLiteral(literal);
     addAssemblyToExecutable(result, insertPtrToRegister(9, strPtr));
-    DEBUG("insertPtrToRegister, 9" << std::hex << static_cast<const void* const>(strPtr));
+    DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9," << std::hex << static_cast<const void* const>(strPtr)<<"));");
     return result;
   }
 };
@@ -54,6 +54,7 @@ public:
     /// move ptr to R9
     std::vector<uint8_t> result;
     addAssemblyToExecutable(result, insertIntegerToRegister(9, literal));
+    DEBUG("addAssemblyToExecutable(executable, insertIntegerToRegister(9," << std::dec << literal<<"));");
     return result;
   }
 };
@@ -66,9 +67,10 @@ public:
   virtual std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> result;
     addAssemblyToExecutable(result, sub_register_imm(10, 29, 0x8*index));
+    DEBUG("addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x"<<std::hex<<0x8*index<<"));");
     addAssemblyToExecutable(result,
                             ldr_register_register_offset(9, 10, 0));
-    DEBUG("ldr_register_register_offset, 9, 10, ");
+    DEBUG("addAssemblyToExecutable(executable, ldr_register_register_offset(9, 10, 0));");
     return result;
   }
 };
@@ -104,7 +106,7 @@ public:
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
       addAssemblyToExecutable(result, mov_register_register(regIndex, 9));
-      DEBUG("mov_register_register," << std::dec << regIndex << ", " << 9 );
+      DEBUG("addAssemblyToExecutable(executable, mov_register_register("<<regIndex<<", 9));");
       regIndex++;
     }
     std::stringstream runtimeFunc;
@@ -115,9 +117,9 @@ public:
       throw new std::runtime_error("cannot find runtime function:"+runtimeFunc.str());
     }
     addAssemblyToExecutable(result, insertPtrToRegister(9, funPtr));
-    DEBUG("insertPtrToRegister, 9, " << std::hex << static_cast<const void* const>(funPtr) );
+    DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9, 0x"<<std::hex << funPtr<<"));");
     addAssemblyToExecutable(result, callRegister(9));
-    DEBUG("callRegister, 9");
+    DEBUG("addAssemblyToExecutable(executable, callRegister(9));");
 
     return result;
   }
@@ -133,16 +135,17 @@ public:
     std::vector<uint8_t> executable;
     if (scopeIndex % 2 > 0) { // only move sp 0x10
       addAssemblyToExecutable(executable, sub_register_imm(31, 31, 0x10));
-      DEBUG("sub_register_imm, 31, 31, 0x10");
+      DEBUG("addAssemblyToExecutable(executable, sub_register_imm(31, 31, 0x10));");
     }
     if (assignment) {
       if (dynamic_cast<StringLiteralExpressionAST *>(assignment.get()) || 
       dynamic_cast<IntegerLiteralExpressionAST *>(assignment.get())) {
         assignment->codegen(); // mov value to R9
         addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
+        DEBUG("addAssemblyToExecutable(executable, sub_register_imm(10, 29, "<<scopeIndex*0x8<<"));");
         addAssemblyToExecutable(executable, str_register_register_offset(
                                                 9, 10, 0));
-        DEBUG("str_register_register_offset, 9, 10");
+        DEBUG("addAssemblyToExecutable(executable, str_register_register_offset(9, 10, 0));");
       } else {
         throw new std::runtime_error("call with wrong type");
       }
@@ -162,9 +165,9 @@ public:
     std::vector<uint8_t> executable;
     codeGenScopeIndex = scopeIndex;
     addAssemblyToExecutable(executable, storeX29X30());
-    DEBUG("storeX29X30");
+    DEBUG("addAssemblyToExecutable(executable, storeX29X30());");
     addAssemblyToExecutable(executable, mov_register_register_from_to_sp(29, 31));
-    DEBUG("mov_register_register_from_to_sp, 29, 31");
+    DEBUG("addAssemblyToExecutable(executable, mov_register_register_from_to_sp(29, 31));");
     for (auto &toplevelExpression : topLevelExpressions) {
       const std::vector<uint8_t> &expressionExecutable =
           toplevelExpression->codegen();
@@ -172,11 +175,11 @@ public:
                 std::back_inserter(executable));
     }
     addAssemblyToExecutable(executable, mov_register_register_from_to_sp(31, 29));
-    DEBUG("mov_register_register_from_to_sp, 31, 29");
+    DEBUG("addAssemblyToExecutable(executable, mov_register_register_from_to_sp(31, 29));");
     addAssemblyToExecutable(executable, loadX29X30());
-    DEBUG("loadX29X30");
+    DEBUG("addAssemblyToExecutable(executable, loadX29X30());");
     addAssemblyToExecutable(executable, ret());
-    DEBUG("ret");
+    DEBUG("addAssemblyToExecutable(executable, ret());");
     return executable;
   }
 };

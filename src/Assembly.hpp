@@ -80,6 +80,7 @@ static std::vector<uint8_t> str_register_register_offset(uint32_t register1, uin
   return assemblies;
 }
 
+/// < imm12 >= 0
 static std::vector<uint8_t> ldr_register_register_offset(uint32_t register1, uint32_t registerOrSP, int imm12){
   std::vector<uint8_t> assemblies;
   uint32_t assembly = 0b1111100101 << 22;
