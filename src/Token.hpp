@@ -103,7 +103,7 @@ public:
       while (isdigit(_lastChar = source.at(_pos++))) {
         digitString.push_back(_lastChar);
       }
-      uSignNumber = std::stoul(digitString);
+      numberVal = std::stoi(digitString);
       return Token::tok_number;
     }
 
@@ -139,7 +139,7 @@ public:
   }
 
   std::string identifier;
-  uint32_t uSignNumber = 0U;
+  int numberVal = 0U;
   std::string stringLiteral;
 
 private:

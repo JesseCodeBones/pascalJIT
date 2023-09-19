@@ -65,8 +65,10 @@ public:
       getNextToken();
       return std::make_unique<StringLiteralExpressionAST>(strValue);
     }
-    case tok_integer: {
-
+    case tok_number: {
+      int value = tokenizer.numberVal;
+      getNextToken();
+      return std::make_unique<IntegerLiteralExpressionAST>(value);
     }
     case Token::tok_var: {
         auto varExpression = parseVariableExpression();
