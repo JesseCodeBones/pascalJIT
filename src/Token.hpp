@@ -24,20 +24,21 @@ enum Token : int {
   tok_var = -6,
 
   // type
-  tok_integer = -7,
+  
 
   // control
-  tok_begin = -8,
-  tok_end = -9,
+  tok_begin = -7,
+  tok_end = -8,
   
 
   //literal
-  tok_string_literal = -10,
+  tok_string_literal = -9,
 
-  tok_dot = -11,
+  tok_dot = -10,
 
   //type
-  tok_string = -12,
+  tok_string = -11,
+  tok_integer = -12,
 
 };
 
@@ -84,8 +85,11 @@ public:
       if (identifier == "end") {
         return Token::tok_end;
       }
-      if (identifier == "string") {
+      if (identifier == "String") {
         return Token::tok_string;
+      }
+      if(identifier == "Integer") {
+        return Token::tok_integer;
       }
       if (identifier == "var") {
         return Token::tok_var;

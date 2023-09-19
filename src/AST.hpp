@@ -45,6 +45,19 @@ public:
   }
 };
 
+class IntegerLiteralExpressionAST: public ExpressionAST {
+public:
+  IntegerLiteralExpressionAST(int literal) : literal(literal) {}
+  ~IntegerLiteralExpressionAST() override = default;
+  int literal;
+  virtual std::vector<uint8_t> codegen() override {
+    /// move ptr to R9
+    std::vector<uint8_t> result;
+    addAssemblyToExecutable(result, insertIntegerToRegister(9, literal));
+    return result;
+  }
+};
+
 class IdentifierExpressionAST : public ExpressionAST {
 public:
   std::string identifier;
@@ -73,8 +86,17 @@ public:
     std::stringstream runtimeFunSigName;
     for (auto &arg : args) {
       if (const auto p = dynamic_cast<IdentifierExpressionAST *>(arg.get())) {
-        if(p->type == Token::tok_string) {
-          runtimeFunSigName << "_string";
+        switch (p->type){
+          case Token::tok_string: {
+            runtimeFunSigName << "_string";
+            break;
+          }
+          case Token::tok_integer: {
+            runtimeFunSigName << "_int";
+            break;
+          }
+          default:
+            break;
         }
       }
       auto argToR9 = arg->codegen();
@@ -112,17 +134,15 @@ public:
       DEBUG("sub_register_imm, 31, 31, 0x10");
     }
     if (assignment) {
-      if (dynamic_cast<StringLiteralExpressionAST *>(assignment.get())) {
-        // string literal assignment
-        std::unique_ptr<StringLiteralExpressionAST> stringVal(
-            static_cast<StringLiteralExpressionAST *>(assignment.release()));
-        const char *strPtr = runtimePtr->addStringLiteral(stringVal->literal);
-        addAssemblyToExecutable(executable, insertPtrToRegister(9, strPtr));
-        DEBUG("insertPtrToRegister, 9, " << std::hex << static_cast<const void* const>(strPtr));
+      if (dynamic_cast<StringLiteralExpressionAST *>(assignment.get()) || 
+      dynamic_cast<IntegerLiteralExpressionAST *>(assignment.get())) {
+        assignment->codegen(); // mov value to R9
         addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
         addAssemblyToExecutable(executable, str_register_register_offset(
                                                 9, 10, 0));
         DEBUG("str_register_register_offset, 9, 10");
+      } else {
+        throw new std::runtime_error("call with wrong type");
       }
     }
     return executable;

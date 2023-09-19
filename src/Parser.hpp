@@ -65,6 +65,9 @@ public:
       getNextToken();
       return std::make_unique<StringLiteralExpressionAST>(strValue);
     }
+    case tok_integer: {
+
+    }
     case Token::tok_var: {
         auto varExpression = parseVariableExpression();
         if (varExpression) {
@@ -99,8 +102,8 @@ public:
       throw std::runtime_error("var without type");
     }
     getNextToken();                          // eat :
-    if (currentToken != Token::tok_string) { // if not type token
-      throw std::runtime_error("var without type");
+    if (currentToken != Token::tok_string && currentToken != Token::tok_integer) { // if not type token
+      throw std::runtime_error("var with incorrect type");
     } else {
       // handle type
       variable->type = (Token)currentToken;
@@ -112,9 +115,7 @@ public:
     if (currentToken == '=') {
       getNextToken();
       // handle literal
-      if (currentToken == Token::tok_string_literal) {
-        variable->assignment = parseExpression();
-      }
+      variable->assignment = parseExpression();
     }
     return std::move(variable);
   }

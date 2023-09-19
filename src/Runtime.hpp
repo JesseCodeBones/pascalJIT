@@ -16,12 +16,21 @@ void runtime_writeln_string(char* str) {
   printf("%s\n", str);
 }
 
+void runtime_write_int(int value) {
+  printf("%d", value);
+}
+void runtime_writeln_int(int value) {
+  printf("%d\n", value);
+}
+
 class Runtime{
 public:
 
   Runtime(){
     nativeFunction["write_string"] = (void*)runtime_write_string;
     nativeFunction["writeln_string"] = (void*) runtime_writeln_string;
+    nativeFunction["write_int"] = (void*) runtime_write_int;
+    nativeFunction["writeln_int"] = (void*) runtime_writeln_int;
     stringLiterals.reserve(1024*1024*8);
   }
   
