@@ -12,7 +12,7 @@
 #include <vector>
 
 static uint32_t codeGenScopeIndex = 0U;
-#define asm_debug
+
 #ifdef asm_debug
 #define DEBUG(STR)                                                       \
     std::cout << STR << std::endl;                                            
@@ -141,7 +141,7 @@ public:
     if (assignment) {
       if (dynamic_cast<StringLiteralExpressionAST *>(assignment.get()) || 
       dynamic_cast<IntegerLiteralExpressionAST *>(assignment.get())) {
-        assignment->codegen(); // mov value to R9
+        addAssemblyToExecutable(executable, assignment->codegen()); // mov value to R9
         addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
         DEBUG("addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x" << std::hex <<scopeIndex*0x8<<"));");
         addAssemblyToExecutable(executable, str_register_register_offset(

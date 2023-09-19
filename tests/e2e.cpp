@@ -53,7 +53,7 @@ TEST(compiler_e2e, parser) {
   auto program = parser.parse();
   auto fun = createJit(program->codegen());
   std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
-  // fun();
+  fun();
   // printAssemblyMachineCode(program->codegen());
 }
 
@@ -61,25 +61,44 @@ void mylog(char* c){
   printf("%s\n", c);
 }
 
+void mylogi(int c) {
+  printf("%d\n", c);
+}
+
 TEST(compiler_e2e, local_variable) {
-  std::vector<uint8_t> result;
+  std::vector<uint8_t> executable;
   const char* test = "you are a good boy";
-  addAssemblyToExecutable(result, storeX29X30());
-  addAssemblyToExecutable(result, mov_register_register_from_to_sp(29, 31));
-  addAssemblyToExecutable(result, sub_register_imm(31, 31, 0x10));
-  addAssemblyToExecutable(result, sub_register_imm(10, 29, 0x8));
-  addAssemblyToExecutable(result, insertPtrToRegister(9, (void*)test));
-  addAssemblyToExecutable(result, str_register_register_offset(9, 10, 0)); //*
-  addAssemblyToExecutable(result,
-                            ldr_register_register_offset(9, 10, 0));
-  addAssemblyToExecutable(result, mov_register_register(0, 9));
-  addAssemblyToExecutable(result, insertPtrToRegister(9, (void*)mylog));
-  addAssemblyToExecutable(result, callRegister(9));
-  // addAssemblyToExecutable(result, add_register_imm(31, 31, 0x10)); //*
-  addAssemblyToExecutable(result, mov_register_register_from_to_sp(31, 29));
-  addAssemblyToExecutable(result, loadX29X30());
-  addAssemblyToExecutable(result, ret());
-  // auto fun = createJit(result);
+  const char* test2 = "I am jesse";
+  addAssemblyToExecutable(executable, storeX29X30());
+  addAssemblyToExecutable(executable, mov_register_register_from_to_sp(29, 31));
+  addAssemblyToExecutable(executable, sub_register_imm(31, 31, 0x10));
+  addAssemblyToExecutable(executable, insertPtrToRegister(9,test));
+  addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x8));
+  addAssemblyToExecutable(executable, str_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(executable, insertPtrToRegister(9,test2));
+  addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x10));
+  addAssemblyToExecutable(executable, str_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(executable, sub_register_imm(31, 31, 0x10));
+  addAssemblyToExecutable(executable, insertIntegerToRegister(9,42));
+  addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x18));
+  addAssemblyToExecutable(executable, str_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x8));
+  addAssemblyToExecutable(executable, ldr_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(executable, mov_register_register(0, 9));
+  addAssemblyToExecutable(executable, insertPtrToRegister(9, (void*)mylog));
+  addAssemblyToExecutable(executable, callRegister(9));
+  addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x18));
+  addAssemblyToExecutable(executable, ldr_register_register_offset(9, 10, 0));
+  addAssemblyToExecutable(executable, mov_register_register(0, 9));
+  addAssemblyToExecutable(executable, insertPtrToRegister(9,(void*) mylogi));
+  addAssemblyToExecutable(executable, callRegister(9));
+  addAssemblyToExecutable(executable, mov_register_register_from_to_sp(31, 29));
+  addAssemblyToExecutable(executable, loadX29X30());
+  addAssemblyToExecutable(executable, ret());
+  // asm("mov x0, #0xffffffff");
+  // addAssemblyToExecutable(executable, insertIntegerToRegister(0, 0xffffffff));
+  // printAssemblyMachineCode(executable);
+  auto fun = createJit(executable);
   // std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
   // fun();
 }

@@ -103,12 +103,14 @@ static std::vector<uint8_t> add_register_register(uint32_t register1, uint32_t r
 
 static std::vector<uint8_t> insertIntegerToRegister(const uint8_t registerIndex, const int value) {
   std::vector<uint8_t> asms;
-  uint32_t mov_x_2 = 0b10100101 << 23;
+
+  uint32_t mov_x_2 = 0b110100101 << 23;
   mov_x_2 |= ((value & 0xffff) << 5);
   mov_x_2 |= registerIndex;
-  uint32_t mov_x_4 = 0b11100101 << 23;
+  uint32_t mov_x_4 = 0b111100101 << 23;
   mov_x_4 |= (((value >> 16) & 0xffff) << 5);
   mov_x_4 |= registerIndex;
+  mov_x_4 |= (1 << 21);
   addUint32_t(asms, mov_x_2);
   addUint32_t(asms, mov_x_4);
   return asms;
