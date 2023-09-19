@@ -98,6 +98,8 @@ public:
           default:
             break;
         }
+      } else if(const auto p = dynamic_cast<StringLiteralExpressionAST *>(arg.get())){
+        runtimeFunSigName << "_string";
       }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
