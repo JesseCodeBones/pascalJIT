@@ -27,13 +27,16 @@ public:
 static std::unique_ptr<Runtime> runtimePtr = std::make_unique<Runtime>();
 class ExpressionAST : public BaseAST {
 public:
+  Token type;
   virtual std::vector<uint8_t> codegen() = 0;
   virtual ~ExpressionAST(){};
 };
 
 class StringLiteralExpressionAST : public ExpressionAST {
 public:
-  StringLiteralExpressionAST(std::string literal) : literal(literal) {}
+  StringLiteralExpressionAST(std::string literal) : literal(literal) {
+    type = Token::tok_string;
+  }
   ~StringLiteralExpressionAST() override = default;
   std::string literal;
   virtual std::vector<uint8_t> codegen() override {
@@ -48,7 +51,9 @@ public:
 
 class IntegerLiteralExpressionAST: public ExpressionAST {
 public:
-  IntegerLiteralExpressionAST(int literal) : literal(literal) {}
+  IntegerLiteralExpressionAST(int literal) : literal(literal) {
+    type = Token::tok_integer;
+  }
   ~IntegerLiteralExpressionAST() override = default;
   int literal;
   virtual std::vector<uint8_t> codegen() override {
@@ -63,7 +68,6 @@ public:
 class IdentifierExpressionAST : public ExpressionAST {
 public:
   std::string identifier;
-  Token type;
   uint32_t index;
   virtual std::vector<uint8_t> codegen() override {
     std::vector<uint8_t> result;
@@ -91,6 +95,7 @@ public:
   }
 };
 
+// TODO find call type with signature of callee
 class CallExpressionAST : public ExpressionAST {
 public:
   CallExpressionAST(std::string calleeName) : calleeName(calleeName) {}
@@ -103,23 +108,17 @@ public:
     uint32_t regIndex = 0;
     std::stringstream runtimeFunSigName;
     for (auto &arg : args) {
-      if (const auto p = dynamic_cast<IdentifierExpressionAST *>(arg.get())) {
-        switch (p->type){
-          case Token::tok_string: {
-            runtimeFunSigName << "_string";
-            break;
-          }
-          case Token::tok_integer: {
-            runtimeFunSigName << "_int";
-            break;
-          }
-          default:
-            break;
+      switch (arg->type){
+        case Token::tok_string: {
+          runtimeFunSigName << "_string";
+          break;
         }
-      } else if(const auto p = dynamic_cast<StringLiteralExpressionAST *>(arg.get())){
-        runtimeFunSigName << "_string";
-      } else if(const auto p = dynamic_cast<IntegerLiteralExpressionAST *>(arg.get())){
-        runtimeFunSigName << "_int";
+        case Token::tok_integer: {
+          runtimeFunSigName << "_int";
+          break;
+        }
+        default:
+          break;
       }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
@@ -146,7 +145,6 @@ public:
 class VariableAST : public ExpressionAST {
 public:
   std::string variableName;
-  Token type;
   std::unique_ptr<ExpressionAST> assignment;
   uint32_t scopeIndex = 1; // from 1 to n
   std::vector<uint8_t> codegen() override {

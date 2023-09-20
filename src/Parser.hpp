@@ -60,6 +60,7 @@ public:
     unary->op = static_cast<Token>(currentToken);
     getNextToken(); // eat op
     unary->operand = std::move(parseExpression());
+    unary->type = unary->operand->type;
     if(unary->operand) {
       return std::move(unary);
     } else {
