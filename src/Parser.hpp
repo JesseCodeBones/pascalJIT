@@ -55,6 +55,18 @@ public:
     return nullptr;
   }
 
+  std::unique_ptr<ExpressionAST> parseUnaryExpression() {
+    std::unique_ptr<UnaryExpressionAST> unary = std::make_unique<UnaryExpressionAST>();
+    unary->op = static_cast<Token>(currentToken);
+    getNextToken(); // eat op
+    unary->operand = std::move(parseExpression());
+    if(unary->operand) {
+      return std::move(unary);
+    } else {
+      return nullptr;
+    }
+  }
+
   std::unique_ptr<ExpressionAST> parseExpression() {
     // parse call
     switch (currentToken) {
@@ -69,6 +81,9 @@ public:
       int value = tokenizer.numberVal;
       getNextToken();
       return std::make_unique<IntegerLiteralExpressionAST>(value);
+    }
+    case tok_neg: {
+      return std::move(parseUnaryExpression());
     }
     case Token::tok_var: {
         auto varExpression = parseVariableExpression();

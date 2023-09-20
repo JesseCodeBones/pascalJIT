@@ -23,9 +23,6 @@ enum Token : int {
   tok_function = -5,
   tok_var = -6,
 
-  // type
-  
-
   // control
   tok_begin = -7,
   tok_end = -8,
@@ -39,6 +36,8 @@ enum Token : int {
   //type
   tok_string = -11,
   tok_integer = -12,
+
+  tok_neg = -13,
 
 };
 
@@ -131,6 +130,11 @@ public:
     if(_lastChar == '.') {
       nextChar();
       return Token::tok_dot;
+    }
+
+    if(_lastChar == '-') {
+      nextChar();
+      return Token::tok_neg;
     }
 
     int thisChar = _lastChar; ///< very important

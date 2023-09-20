@@ -20,6 +20,16 @@ static std::vector<uint8_t> callRegister(uint32_t register1){
   return asms;
 }
 
+static std::vector<uint8_t> neg_register_register_32(uint32_t register1, uint32_t register2){
+  std::vector<uint8_t> assemblies;
+  uint32_t assembly = 0b01001011 << 24;
+  assembly |= (register2 << 16);
+  assembly |= (0b11111 << 5);
+  assembly |= (register1);
+  addUint32_t(assemblies, assembly);
+  return assemblies;
+}
+
 static std::vector<uint8_t> mov_register_register(uint32_t register1, uint32_t register2){
   std::vector<uint8_t> assemblies;
   uint32_t assembly = 0b10101010000 << 21;

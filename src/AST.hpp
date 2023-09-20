@@ -76,6 +76,21 @@ public:
   }
 };
 
+class UnaryExpressionAST : public ExpressionAST {
+public:
+  Token op;
+  std::unique_ptr<ExpressionAST> operand;
+  std::vector<uint8_t> codegen() override {
+    std::vector<uint8_t> result;
+    addAssemblyToExecutable(result, operand->codegen());
+    if(op == Token::tok_neg) {
+      addAssemblyToExecutable(result, neg_register_register_32(9, 9));
+      DEBUG("addAssemblyToExecutable(executable, neg_register_register_32(9, 9));");
+    }
+    return result;
+  }
+};
+
 class CallExpressionAST : public ExpressionAST {
 public:
   CallExpressionAST(std::string calleeName) : calleeName(calleeName) {}

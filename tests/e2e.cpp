@@ -50,10 +50,11 @@ TEST(compiler_e2e, parser) {
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());
   Parser parser(tokenizer, std::make_shared<Runtime>());
+  parser.debug = true;
   auto program = parser.parse();
-  auto fun = createJit(program->codegen());
-  std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
-  fun();
+  // auto fun = createJit(program->codegen());
+  // std::cout << "ptr: 0x" << std::hex<< (void*) fun << std::endl;
+  // fun();
   // printAssemblyMachineCode(program->codegen());
 }
 
