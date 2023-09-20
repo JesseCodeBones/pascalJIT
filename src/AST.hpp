@@ -118,6 +118,8 @@ public:
         }
       } else if(const auto p = dynamic_cast<StringLiteralExpressionAST *>(arg.get())){
         runtimeFunSigName << "_string";
+      } else if(const auto p = dynamic_cast<IntegerLiteralExpressionAST *>(arg.get())){
+        runtimeFunSigName << "_int";
       }
       auto argToR9 = arg->codegen();
       addAssemblyToExecutable(result, argToR9);
