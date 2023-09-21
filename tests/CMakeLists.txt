@@ -1,4 +1,6 @@
+
 find_package(GTest REQUIRED)
+
 file(GLOB 
 test_sources 
 CONFIGURE_DEPENDS 
