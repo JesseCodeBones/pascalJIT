@@ -17,7 +17,6 @@ int main(int argc, char **argv) {
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());
   Parser parser(tokenizer, std::make_shared<Runtime>());
-  parser.debug = true;
   auto program = parser.parse();
 
   auto fun = createJit(program->codegen());

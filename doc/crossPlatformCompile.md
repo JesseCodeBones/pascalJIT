@@ -10,4 +10,5 @@
 3. test  
 `LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ ./pascal_jit_e2e_test`
 4. 编译执行快捷方式：
+`cd build/tests`  
 `LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ make && LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ ./pascal_jit_e2e_test`
