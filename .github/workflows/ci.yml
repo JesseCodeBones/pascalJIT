@@ -10,14 +10,32 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        arch: [arm64]
 
     steps:
     - uses: actions/checkout@v3
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: prepare
+      run: |
+        sudo apt-get upgrade && sudo apt-get update -y && sudo apt-get install  qemu-user-static binfmt-support gcc-aarch64-linux-gnu g++-aarch64-linux-gnu qemu-user cmake build-essential -y --no-install-recommends &&
+        sudo dpkg --add-architecture arm64
+    - name: build
+      run: |
+        cmake -B build -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ && cmake --build build --parallel
+    - name: link
+      run: |
+        sudo ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /usr/lib/ld-linux-aarch64.so.1
+    - name: print dir
+      run: |
+        LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ ./build/pascal_jit_compiler ./tests/acceptance/printVariable.pas
+      env: 
+        LD_LIBRARY_PATH: /usr/aarch64-linux-gnu/lib/
+    - name: test
+      run: |
+        python3 ./acceptance_test.py
+      env:
+        LD_LIBRARY_PATH: /usr/aarch64-linux-gnu/lib/
+
+    
