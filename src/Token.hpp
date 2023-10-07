@@ -4,11 +4,10 @@
 #include <cassert>
 #include <cctype>
 #include <cstdint>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <iostream>
-
 
 enum Token : int {
 
@@ -26,18 +25,20 @@ enum Token : int {
   // control
   tok_begin = -7,
   tok_end = -8,
-  
 
-  //literal
+  // literal
   tok_string_literal = -9,
 
   tok_dot = -10,
 
-  //type
+  // type
   tok_string = -11,
   tok_integer = -12,
 
   tok_neg = -13,
+
+  tok_assign = -14,
+  tok_assign_type = -15,
 
 };
 
@@ -46,7 +47,7 @@ class Tokenizer {
 public:
   Tokenizer(std::string _source) : source(_source) {}
   int getToken() {
-    if ( _pos >= source.size()) {
+    if (_pos >= source.size()) {
       return Token::tok_eof;
     }
     while (isspace(_lastChar)) {
@@ -56,12 +57,22 @@ public:
     if ('{' == _lastChar) {
       do {
         nextChar();
-        if ( _pos >= source.size() || _lastChar == '\n' || _lastChar == '\r') {
+        if (_pos >= source.size() || _lastChar == '\n' || _lastChar == '\r') {
           throw std::runtime_error("illegal comments");
         }
       } while (_lastChar != '}');
       nextChar();
       return getToken();
+    }
+
+    if (_lastChar == ':') {
+      nextChar();
+      if (_lastChar == '=') {
+        nextChar();
+        return Token::tok_assign;
+      } else {
+        return Token::tok_assign_type;
+      }
     }
 
     if (isalpha(_lastChar)) {
@@ -87,7 +98,7 @@ public:
       if (identifier == "String") {
         return Token::tok_string;
       }
-      if(identifier == "Integer") {
+      if (identifier == "Integer") {
         return Token::tok_integer;
       }
       if (identifier == "var") {
@@ -106,12 +117,12 @@ public:
       return Token::tok_number;
     }
 
-    if(_lastChar == '\'') {
+    if (_lastChar == '\'') {
       nextChar();
       stringLiteral = "";
       std::stringstream stream;
       while (_lastChar != '\'') {
-         if (_lastChar == '\\') {
+        if (_lastChar == '\\') {
           nextChar();
           if (_lastChar == 'n') {
             stream << '\n';
@@ -127,12 +138,12 @@ public:
       return Token::tok_string_literal;
     }
 
-    if(_lastChar == '.') {
+    if (_lastChar == '.') {
       nextChar();
       return Token::tok_dot;
     }
 
-    if(_lastChar == '-') {
+    if (_lastChar == '-') {
       nextChar();
       return Token::tok_neg;
     }
@@ -150,8 +161,8 @@ private:
   std::string source;
   char _lastChar = ' ';
   uint32_t _pos = 0U;
-  void nextChar(){
-    if ( _pos >= source.size()) {
+  void nextChar() {
+    if (_pos >= source.size()) {
       _lastChar = Token::tok_eof;
     } else {
       _lastChar = source.at(_pos++);

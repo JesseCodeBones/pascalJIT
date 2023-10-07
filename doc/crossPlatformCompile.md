@@ -12,3 +12,12 @@
 4. 编译执行快捷方式：
 `cd build/tests`  
 `LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ make && LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/ ./pascal_jit_e2e_test`
+
+
+也可以使用：  
+
+```
+export LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib/
+cd ./build/tests
+make && ./pascal_jit_e2e_test
+```

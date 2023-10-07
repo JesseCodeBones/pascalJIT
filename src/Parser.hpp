@@ -43,6 +43,13 @@ public:
         callAST->args.push_back(std::move(expression));
       }
       return std::move(callAST);
+    } else if (currentToken == Token::tok_assign) {
+      getNextToken(); // eat :=
+      std::unique_ptr<AssignmentExpressionAST> assignment = std::make_unique<AssignmentExpressionAST>();
+      assignment->assignment = parseExpression();
+      assignment->variableName = identifier;
+      assignment->scopeIndex = scopeLocals[currentScope][identifier];
+      return std::move(assignment);
     } else {
       // normal identifier expression
       std::unique_ptr<IdentifierExpressionAST> identifierPtr = std::make_unique<IdentifierExpressionAST>();
@@ -116,7 +123,7 @@ public:
     variable->scopeIndex = index;
     
     getNextToken(); // eat identifier
-    if (currentToken != ':') {
+    if (currentToken != Token::tok_assign_type) {
       throw std::runtime_error("var without type");
     }
     getNextToken();                          // eat :

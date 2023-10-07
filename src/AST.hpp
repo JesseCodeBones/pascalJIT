@@ -95,6 +95,23 @@ public:
   }
 };
 
+class AssignmentExpressionAST: public ExpressionAST {
+  public:
+  std::string variableName;
+  std::unique_ptr<ExpressionAST> assignment;
+  uint32_t scopeIndex = 1; // from 1 to n
+  std::vector<uint8_t> codegen() override {
+    std::vector<uint8_t> executable;
+    addAssemblyToExecutable(executable, assignment->codegen()); // mov value to R9
+    addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
+    DEBUG("addAssemblyToExecutable(executable, sub_register_imm(10, 29, 0x" << std::hex <<scopeIndex*0x8<<"));");
+    addAssemblyToExecutable(executable, str_register_register_offset(
+                                            9, 10, 0));
+    DEBUG("addAssemblyToExecutable(executable, str_register_register_offset(9, 10, 0));");
+    return executable;
+  }
+};
+
 // TODO find call type with signature of callee
 class CallExpressionAST : public ExpressionAST {
 public:
