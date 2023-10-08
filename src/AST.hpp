@@ -12,7 +12,7 @@
 #include <vector>
 
 static uint32_t codeGenScopeIndex = 0U;
-
+#define asm_debug
 #ifdef asm_debug
 #define DEBUG(STR)                                                       \
     std::cout << STR << std::endl;                                            
@@ -41,6 +41,23 @@ std::unique_ptr<ExpressionAST> RHS;
 
 virtual std::vector<uint8_t> codegen() override {
   std::vector<uint8_t> result;
+  // move LHS to R9
+  addAssemblyToExecutable(result, LHS->codegen());
+  addAssemblyToExecutable(result,mov_register_register(10U, 9U)); // LHS to 10
+  DEBUG("addAssemblyToExecutable(executable, mov_register_register(10, 9));");
+  // mov RHS to R9
+  addAssemblyToExecutable(result, RHS->codegen());
+  if (op == Token::tok_positive) {
+    // x + y
+    addAssemblyToExecutable(result, add_register_register(9, 10, 9));
+    DEBUG("addAssemblyToExecutable(executable, add_register_register(9, 10, 9));");
+  } else if (op == Token::tok_neg) {
+    // x - y
+    addAssemblyToExecutable(result, sub_register_register(9, 10, 9));
+    DEBUG("addAssemblyToExecutable(executable, sub_register_register(9, 10, 9));");
+  } else {
+    throw std::runtime_error("unsupported binary operator");
+  }
   return result;
 }
 };
