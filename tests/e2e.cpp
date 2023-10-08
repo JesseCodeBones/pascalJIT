@@ -45,7 +45,7 @@ void printAssemblyMachineCode(T&& runtime) {
 }
 
 TEST(compiler_e2e, parser) {
-  std::ifstream t(workspace / "tests" / "cases" / "variable_assign.pas");
+  std::ifstream t(workspace / "tests" / "cases" / "binaryExpression.pas");
   std::stringstream buffer;
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());
@@ -54,7 +54,7 @@ TEST(compiler_e2e, parser) {
   auto program = parser.parse();
   auto fun = createJit(program->codegen());
   std::cout << "ptr: " << std::hex<< (void*) fun << std::endl;
-  fun();
+  // fun();
   // printAssemblyMachineCode(program->codegen());
 }
 
