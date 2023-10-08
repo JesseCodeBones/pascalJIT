@@ -41,20 +41,53 @@ std::unique_ptr<ExpressionAST> RHS;
 
 virtual std::vector<uint8_t> codegen() override {
   std::vector<uint8_t> result;
+  void *pushFunPtr = runtimePtr->nativeFunction["__runtime_push__"];
+  void *popFunPtr = runtimePtr->nativeFunction["__runtime_pop__"];
   // move LHS to R9
   addAssemblyToExecutable(result, LHS->codegen());
-  addAssemblyToExecutable(result,mov_register_register(10U, 9U)); // LHS to 10
-  DEBUG("addAssemblyToExecutable(executable, mov_register_register(10, 9));");
+  addAssemblyToExecutable(result,mov_register_register(0U, 9U)); // LHS to 0
+  DEBUG("addAssemblyToExecutable(executable, mov_register_register(0, 9));");
+  // call push
+  addAssemblyToExecutable(result,insertPtrToRegister(9U, pushFunPtr));
+  DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9U, pushFunPtr));");
+  addAssemblyToExecutable(result,callRegister(9U));
+  DEBUG("addAssemblyToExecutable(executable, callRegister(9U));");
   // mov RHS to R9
   addAssemblyToExecutable(result, RHS->codegen());
+  addAssemblyToExecutable(result,mov_register_register(0U, 9U)); // LHS to 0
+  DEBUG("addAssemblyToExecutable(executable, mov_register_register(0, 9));");
+  // call push
+  addAssemblyToExecutable(result,insertPtrToRegister(9U, pushFunPtr));
+  DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9U, pushFunPtr));");
+  addAssemblyToExecutable(result,callRegister(9U));
+  DEBUG("addAssemblyToExecutable(executable, callRegister(9U));");
+
+  // call pop
+  addAssemblyToExecutable(result,insertPtrToRegister(9U, popFunPtr));
+  DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9U, popFunPtr));");
+  addAssemblyToExecutable(result,callRegister(9U));
+  DEBUG("addAssemblyToExecutable(executable, callRegister(9U));");
+  // mov pop value to R10 as RHS
+  addAssemblyToExecutable(result,mov_register_register(10U, 0U));
+  DEBUG("addAssemblyToExecutable(executable, mov_register_register(10U, 0U));");
+
+  addAssemblyToExecutable(result,insertPtrToRegister(9U, popFunPtr));
+  DEBUG("addAssemblyToExecutable(executable, insertPtrToRegister(9U, popFunPtr));");
+  addAssemblyToExecutable(result,callRegister(9U));
+  DEBUG("addAssemblyToExecutable(executable, callRegister(9U));");
+  // mov pop value to R9 as LHS
+  addAssemblyToExecutable(result,mov_register_register(9U, 0U));
+  DEBUG("addAssemblyToExecutable(executable, mov_register_register(9U, 0U));");
+  
+
   if (op == Token::tok_positive) {
     // x + y
-    addAssemblyToExecutable(result, add_register_register(9, 10, 9));
-    DEBUG("addAssemblyToExecutable(executable, add_register_register(9, 10, 9));");
+    addAssemblyToExecutable(result, add_register_register(9, 9, 10));
+    DEBUG("addAssemblyToExecutable(executable, add_register_register(9, 9, 10));");
   } else if (op == Token::tok_neg) {
     // x - y
-    addAssemblyToExecutable(result, sub_register_register(9, 10, 9));
-    DEBUG("addAssemblyToExecutable(executable, sub_register_register(9, 10, 9));");
+    addAssemblyToExecutable(result, sub_register_register(9, 9, 10));
+    DEBUG("addAssemblyToExecutable(executable, sub_register_register(9, 9, 10));");
   } else {
     throw std::runtime_error("unsupported binary operator");
   }
