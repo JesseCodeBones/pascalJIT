@@ -77,13 +77,13 @@ public:
 
   std::unique_ptr<ExpressionAST> parseBinaryExpression(){
     getNextToken(); // eat (
-    std::unique_ptr<ExpressionAST> LHS = parseExpression();
+    std::unique_ptr<BinaryExpressionAST> binary = std::make_unique<BinaryExpressionAST>();
+    binary->LHS = parseExpression();
     if(currentToken == ')') {
       // no RHS, eat ) and return LHS
-      return LHS;
+      getNextToken();
+      return std::move(binary->LHS);
     } else if (currentToken == Token::tok_positive || currentToken == Token::tok_neg) {
-      std::unique_ptr<BinaryExpressionAST> binary;
-      binary->LHS = std::move(LHS);
       // currently support pos and neg
       Token op = static_cast<Token>(currentToken);
       binary->op = op;
