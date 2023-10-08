@@ -36,9 +36,10 @@ enum Token : int {
   tok_integer = -12,
 
   tok_neg = -13,
+  tok_positive = -14,
 
-  tok_assign = -14,
-  tok_assign_type = -15,
+  tok_assign = -15,
+  tok_assign_type = -16,
 
 };
 
@@ -146,6 +147,10 @@ public:
     if (_lastChar == '-') {
       nextChar();
       return Token::tok_neg;
+    }
+    if(_lastChar == '+') {
+      nextChar();
+      return Token::tok_positive;
     }
 
     int thisChar = _lastChar; ///< very important

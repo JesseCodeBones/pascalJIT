@@ -75,6 +75,33 @@ public:
     }
   }
 
+  std::unique_ptr<ExpressionAST> parseBinaryExpression(){
+    getNextToken(); // eat (
+    std::unique_ptr<ExpressionAST> LHS = parseExpression();
+    if(currentToken == ')') {
+      // no RHS, eat ) and return LHS
+      return LHS;
+    } else if (currentToken == Token::tok_positive || currentToken == Token::tok_neg) {
+      std::unique_ptr<BinaryExpressionAST> binary;
+      binary->LHS = std::move(LHS);
+      // currently support pos and neg
+      Token op = static_cast<Token>(currentToken);
+      binary->op = op;
+      getNextToken(); // eat token
+      binary->RHS = parseExpression();
+      if(currentToken != ')'){
+        std::cout << "binary expression without )\n";
+        throw std::runtime_error("binary expression without )");
+      } else {
+        getNextToken(); // eat )
+      }
+      return std::move(binary);
+    } else {
+      std::cout << "Illegal binary expression\n";
+      throw std::runtime_error("Illegal binary expression");
+    }
+  }
+
   std::unique_ptr<ExpressionAST> parseExpression() {
     // parse call
     switch (currentToken) {
@@ -100,6 +127,10 @@ public:
         }
         return nullptr;
       }
+    case '(': {
+      // probe binary expression
+      return std::move(parseBinaryExpression());
+    }
     default:
       getNextToken(); // eat undefined token
       return nullptr;

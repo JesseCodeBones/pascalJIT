@@ -32,6 +32,19 @@ public:
   virtual ~ExpressionAST(){};
 };
 
+class BinaryExpressionAST : public ExpressionAST {
+
+public:
+std::unique_ptr<ExpressionAST> LHS;
+Token op;
+std::unique_ptr<ExpressionAST> RHS;
+
+virtual std::vector<uint8_t> codegen() override {
+  std::vector<uint8_t> result;
+  return result;
+}
+};
+
 class StringLiteralExpressionAST : public ExpressionAST {
 public:
   StringLiteralExpressionAST(std::string literal) : literal(literal) {
@@ -101,6 +114,10 @@ class AssignmentExpressionAST: public ExpressionAST {
   std::unique_ptr<ExpressionAST> assignment;
   uint32_t scopeIndex = 1; // from 1 to n
   std::vector<uint8_t> codegen() override {
+    if(!assignment) {
+      std::cout << "illegal assignment expression\n";
+      throw new std::runtime_error("illegal assignment expression");
+    }
     std::vector<uint8_t> executable;
     addAssemblyToExecutable(executable, assignment->codegen()); // mov value to R9
     addAssemblyToExecutable(executable, sub_register_imm(10, 29, scopeIndex*0x8));
