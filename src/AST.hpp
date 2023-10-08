@@ -12,7 +12,6 @@
 #include <vector>
 
 static uint32_t codeGenScopeIndex = 0U;
-#define asm_debug
 #ifdef asm_debug
 #define DEBUG(STR)                                                       \
     std::cout << STR << std::endl;                                            
