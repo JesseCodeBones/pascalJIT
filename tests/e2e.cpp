@@ -44,16 +44,17 @@ template <typename T> void printAssemblyMachineCode(T &&runtime) {
 }
 
 TEST(compiler_e2e, parser) {
-  std::ifstream t(workspace / "tests" / "cases" / "binaryExpression.pas");
+  std::ifstream t(workspace / "tests" / "cases" / "return.pas");
   std::stringstream buffer;
   buffer << t.rdbuf();
   Tokenizer tokenizer(buffer.str());
   Parser parser(tokenizer, std::make_shared<Runtime>());
   parser.debug = true;
   auto program = parser.parse();
-  auto fun = createJit(program->codegen());
+  auto fun = createJitInt(program->codegen());
   std::cout << "ptr: " << std::hex << (void *)fun << std::endl;
-  fun();
+  const int result = fun();
+  std::cout << std::dec << result << std::endl;
   // printAssemblyMachineCode(program->codegen());
 }
 

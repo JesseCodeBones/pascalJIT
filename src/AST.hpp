@@ -178,6 +178,19 @@ class AssignmentExpressionAST: public ExpressionAST {
   }
 };
 
+class ResultExpressionAST : public ExpressionAST{
+  public:
+  std::unique_ptr<ExpressionAST> assignment;
+  std::vector<uint8_t> codegen() override {
+    std::vector<uint8_t> result;
+    auto assignmentR9 = assignment->codegen();
+    addAssemblyToExecutable(result, assignmentR9);
+    addAssemblyToExecutable(result, mov_register_register(0, 9));
+    DEBUG("addAssemblyToExecutable(executable, mov_register_register(0, 9));");
+    return result;
+  }
+};
+
 // TODO find call type with signature of callee
 class CallExpressionAST : public ExpressionAST {
 public:

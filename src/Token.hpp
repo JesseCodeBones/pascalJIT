@@ -41,6 +41,7 @@ enum Token : int {
   tok_assign = -15,
   tok_assign_type = -16,
 
+  tok_result = -17,
 };
 
 class Tokenizer {
@@ -87,6 +88,10 @@ public:
 
       if (identifier == "program") {
         return Token::tok_program;
+      }
+
+      if (identifier == "Result") {
+        return Token::tok_result;
       }
 
       if (identifier == "begin") {
@@ -148,7 +153,7 @@ public:
       nextChar();
       return Token::tok_neg;
     }
-    if(_lastChar == '+') {
+    if (_lastChar == '+') {
       nextChar();
       return Token::tok_positive;
     }

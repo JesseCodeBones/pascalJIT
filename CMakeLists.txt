@@ -8,6 +8,7 @@ enable_testing()
 aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src sources)
 
 add_executable(pascal_jit_compiler ${sources} main.cpp)
+
 if(ENABLE_TEST)
 add_subdirectory(tests)
 endif()

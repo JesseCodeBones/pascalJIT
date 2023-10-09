@@ -102,11 +102,25 @@ public:
     }
   }
 
+  std::unique_ptr<ExpressionAST> parseResultExpression(){
+    std::unique_ptr<ResultExpressionAST> resultExpr = std::make_unique<ResultExpressionAST>();
+    getNextToken(); // eat Result
+    if(currentToken == Token::tok_assign) {
+      getNextToken(); // eat assign
+      resultExpr->assignment = parseExpression();
+    } else {
+      throw std::runtime_error("Result without assignment");
+    }
+    return resultExpr;
+  }
+
   std::unique_ptr<ExpressionAST> parseExpression() {
     // parse call
     switch (currentToken) {
     case tok_identifier:
       return parseIdentifierExpression();
+    case tok_result:
+      return parseResultExpression();
     case tok_string_literal: {
       std::string strValue = tokenizer.stringLiteral;
       getNextToken();
