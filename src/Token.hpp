@@ -42,6 +42,7 @@ enum Token : int {
   tok_assign_type = -16,
 
   tok_result = -17,
+  tok_if = -18,
 };
 
 class Tokenizer {
@@ -109,6 +110,9 @@ public:
       }
       if (identifier == "var") {
         return Token::tok_var;
+      }
+      if (identifier == "if") {
+        return Token::tok_if;
       }
       return Token::tok_identifier;
     }
