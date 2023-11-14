@@ -43,6 +43,8 @@ enum Token : int {
 
   tok_result = -17,
   tok_if = -18,
+
+  tok_eq = -19,
 };
 
 class Tokenizer {
@@ -160,6 +162,10 @@ public:
     if (_lastChar == '+') {
       nextChar();
       return Token::tok_positive;
+    }
+    if (_lastChar == '=') {
+      nextChar();
+      return Token::tok_eq;
     }
 
     int thisChar = _lastChar; ///< very important

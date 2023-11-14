@@ -83,7 +83,7 @@ public:
       // no RHS, eat ) and return LHS
       getNextToken();
       return std::move(binary->LHS);
-    } else if (currentToken == Token::tok_positive || currentToken == Token::tok_neg) {
+    } else if (currentToken == Token::tok_positive || currentToken == Token::tok_neg || currentToken == Token::tok_eq) {
       // currently support pos and neg
       Token op = static_cast<Token>(currentToken);
       binary->op = op;
